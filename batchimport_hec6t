@@ -1,0 +1,89 @@
+'Tool to import all HEC 6T result files (Station, min bed elev, max bed elev) in a folder to excel
+
+Option Explicit
+
+Sub batchimport()
+
+Dim text As String
+Dim textline As String
+Dim station As String
+Dim MaxBed As String
+Dim MinBed As String
+Dim testcompare As String
+Dim test2compare As String
+Dim test3compare As String
+Dim i As Integer
+Dim j As Integer
+Dim lm As Integer
+Dim aa As Integer
+Dim Folder As Object, File As Object, objFSO As Object
+
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+Set Folder = objFSO.GetFolder("C:\Users\Pizzagirl\Documents\programming\Excel macros\test")
+
+'delete existing content
+Range("a1:bb500") = ""
+
+Application.ScreenUpdating = False
+
+Close #1
+aa = 4
+
+For Each File In Folder.Files
+    
+    If Right(File.Name, 3) = ".T6" Then
+        'Column headings
+        Cells(1, aa - 3) = File.Name
+        Cells(1, aa - 1).Value = "Station"
+        Cells(1, aa).Value = "MinBed, ft"
+        Cells(1, aa + 1).Value = "MaxBed, ft"
+        
+        Open File For Input As #1
+        Do Until EOF(1)
+        
+            lm = 1
+            test2compare = "   CHANNEL    MAXIMU"   'end condition: (this is start of sed concentration table)
+            j = 1
+            
+            'looking for min and max summary table
+            Do Until EOF(1)
+        
+                Line Input #1, text  'Line input reads a single line from an open sequential file and assigns it to a String variable.
+                testcompare = Left(text, 20)
+                j = 1
+        
+                If testcompare = " MAXIMUM AND MINIMUM" Then
+                    Do Until j = 13               '13 lines of text before desired data
+                        Line Input #1, text
+                        j = j + 1
+                        testcompare = Left(text, 20)
+                    Loop
+                    'copies data in table. Needs reformatting somewhat if more than one segment in model.
+                    Do Until testcompare = test2compare   'stop copying text when you reach table sb-3
+                        Line Input #1, text
+                        station = Left(text, 11)
+                        MaxBed = Right(text, 11)         'copies max bed change
+                        MinBed = Left(Right(text, 22), 11)
+                 
+                        Cells(1 + lm, aa - 1).Value = station
+                        Cells(1 + lm, aa).Value = MinBed     'starts in P2; columns are each one cross section station, rows events
+                        Cells(1 + lm, aa + 1).Value = MaxBed
+                        lm = lm + 1
+                        testcompare = Left(text, 20)
+                    Loop
+                 End If
+        
+            Loop
+        
+        Loop
+        
+        Close #1
+        
+        'move starting column over for next file's data
+        aa = aa + 5
+    
+    End If
+
+Next
+
+End Sub
