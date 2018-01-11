@@ -73,14 +73,14 @@ for file1 in allfile:
         
         #if destination has file of same name        
         if os.path.exists(destfile):
-            print "exists"
+            #print "exists"
             if status == "replace":
                 os.remove(destfile)
                 move(origin, dest)
-                print "moved ", file1
+                print "overwrote ", file1
             #if status == "skip", don't move file
         else:
-            print "doesn't exist"
+            #print "doesn't exist"
             move(origin, dest)
             print "moved ", file1
 
