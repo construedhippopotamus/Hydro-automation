@@ -31,10 +31,7 @@ folders = ['2-YR', '5-YR', '10-YR', '25-YR', '50-YR']
 
 #isolate numbers from file names
 fldrnum = [int(f.replace('-YR', '')) for f in folders]
-"""fldrnum = []
-for f in folders:
-    fldrnum = int()
-"""
+
 print "fldrnum", type(fldrnum[0])
 
 dictionary = dict(zip(fldrnum, folders))
