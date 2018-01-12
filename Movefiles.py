@@ -27,15 +27,15 @@ srcfolder=r'C:\Users\Pizzagirl\Documents\programming\MOVEFOLDER'
 destfolder = r'C:\Users\Pizzagirl\Documents\programming\DESTFOLDER'
 
 #list of folders to move files into. Must all be within same destfolder
-folders = ['2-YR', '5-YR', '10-YR', '25-YR', '50-YR']
+folders = ['2-YR', '5-YR', '10-YR', '25-YR', '50-YR', '100-YR']
 
 #isolate numbers from file names
 fldrnum = [int(f.replace('-YR', '')) for f in folders]
 
-print "fldrnum", type(fldrnum[0])
+#print "fldrnum", type(fldrnum[0])
 
 dictionary = dict(zip(fldrnum, folders))
-print "dictionary", dictionary
+#print "dictionary", dictionary
 
 extension = ['DAT', 'DNA', 'HDG', 'RES']
 
@@ -52,12 +52,15 @@ for file1 in allfile:
         filenum = int(re.findall(r'\d\d', file1)[0]) 
         #print "filenum", filenum
         
-        #this line is supposed to return fldrnum that matches. not sure I trust it.
-        matchnum = next(x for x in fldrnum if x == filenum)
+        if filenum == 0:
+            #handle 100yr error
+            filenum=100
+        else:        
+            #returnS fldrnum that matches. 
+            matchnum = next(x for x in fldrnum if x == filenum)
         #print "matchnum", type(matchnum)
 
         #should return folder with same numbers as RM filename
-        #could just add in "-YR" to each value to make folder name instead of using dictionary
         matchfldr = dictionary[matchnum]
         #print "matchfldr", matchfldr
         
@@ -83,4 +86,3 @@ for file1 in allfile:
             #print "doesn't exist"
             move(origin, dest)
             print "moved ", file1
-
