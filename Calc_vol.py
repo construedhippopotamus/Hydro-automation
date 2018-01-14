@@ -4,7 +4,7 @@ Created on Thu Jan 11 05:52:56 2018
 
 @author: Jenny
 
-Calculate hydromodification volume for subarea data using San Bernardino Water Quality Manual equations.
+Calculate hydromodification volume for subarea data using San Bernardino Water Quality Manual equations and python pandas.
 
 1. pivot table for each lot
 2. look up CN from LU and soil
