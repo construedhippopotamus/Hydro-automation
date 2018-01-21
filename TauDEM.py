@@ -33,7 +33,7 @@ get user input and pass to function to set path.
 import arcpy
 import ctypes  # An included library with Python install.
 import os
-
+ 
 # Load required TauDEM toolboxes - change path
 arcpy.ImportToolbox("C:/Program Files/TauDEM/TauDEM5Arc/TauDEM Tools.tbx")
 
