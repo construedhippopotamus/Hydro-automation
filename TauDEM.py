@@ -1,3 +1,4 @@
+"""
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------
 # TauDEM_all.py
@@ -7,14 +8,26 @@
 # ---------------------------------------------------------------------------
 
 
-#next: get user input and pass to function to set path.
+#next: 
+
+get user input and pass to function to set path.
 #check if files exist and prompt user to select new destination if they do
-#   NOTE: currently this assumes outlet and dem are both in same folder as outputs - add message to user?
-#docker to package? install TauDEM in docker?
-#comment code. standardize names
-#merge tiny pieces of area with surrounding polygons.
-# fix the environment output to be shorter.
+#currently this assumes outlet and dem are both in same folder as outputs - add message to user?
 #add message box that says "done"
+
+#docker to package? install TauDEM in docker?
+
+#merge tiny pieces of area with surrounding polygons.
+
+#comment code. standardize names to be used for any project
+
+#changed the following to "path" - see if it works!
+#arcpy.env.workspace , arcpy.env.scratchWorkspace
+
+!!!!!!!!!!!!!!!!!!!!! DOES THIS NEED SPATIAL ANALYST CHECKED OUT?!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+"""
+
 
 # Import arcpy module
 import arcpy
@@ -27,13 +40,24 @@ arcpy.ImportToolbox("C:/Program Files/TauDEM/TauDEM5Arc/TauDEM Tools.tbx")
 # add a message box later
 #ctypes.windll.user32.MessageBoxW(0, "Your text", "Your title", 1)
 
-#set working directory
+#set working directory and workspaces
 path = r"C:\Program Files\TauDEM\Demo"
+
+arcpy.env.scratchWorkspace = path        # orig - can change back"C:\\Users\\jenny.mital\\Documents\\ArcGIS\\Default.gdb"
+
+arcpy.env.workspace = path               # orig - can change back: "C:\\Users\\jenny.mital\\Documents\\ArcGIS\\Default.gdb"
+
 
 os.chdir(path)
 
 # Local variables:
+
+#INPUT RASTER
 cubdem = "cubdem"
+#INPUT OUTLET POINT SHAPEFILE
+CubGauge_shp = "CubGauge.shp"
+
+#PRODUCTS - DUPLICATES ARE NUMBERED BY STEP IN TUTORIAL
 cubdemfel_tif = "cubdemfel.tif"
 cubdemsd8_tif = "cubdemsd8.tif"
 cubdemp_tif = "cubdemp.tif"
@@ -53,7 +77,6 @@ cubdemnet19_shp = "cubdemnet19.shp"
 cubdemw19_tif = "cubdemw19.tif"
 cubdemss_tif = "cubdemss.tif"
 cubdemsrc_tif = "cubdemsrc.tif"
-CubGauge_shp = "CubGauge.shp"
 cubdem_Outletmv = "cubdem_Outletmv.shp"
 cubdemss21_tif = "cubdemss21.tif"
 cubdemssa21_tif = "cubdemssa21.tif"
@@ -64,10 +87,8 @@ cubdemtree22_txt = "cubdemtree22.txt"
 cubdemcoord22_txt = "cubdemcoord22.txt"
 cubdemnet22_shp = "cubdemnet22.shp"
 cubdemw22_tif = "cubdemw22.tif"
-#make this path relative. it wouldn't run subwatersheds unless full path was here... fix!
-subwatersheds_shp = r"C:\Program Files\TauDEM\Demo\subwatersheds.shp"
-subwatersheds_shp_ac = subwatersheds_shp
-Modified_Input_Features = subwatersheds_shp_ac
+
+subwatersheds_shp = "subwatersheds.shp"  #orig - can change back:  r"C:\Program Files\TauDEM\Demo\subwatersheds.shp"
 
 # Process: Pit Remove 3-8
 arcpy.PitRemove_TDEM(cubdem, "", "", "8", cubdemfel_tif)
@@ -105,160 +126,37 @@ arcpy.StreamReachAndWatershed_TDEM(cubdemfel_tif, cubdemp_tif, cubdemad8_tif, cu
 # Process: Peuker Douglas 20
 arcpy.PeukerDouglas_TDEM(cubdemfel_tif, "0.4", "0.1", "0.05", "8", cubdemss_tif)
 
-# Process: Peuker Douglas Stream Definition 21
+# Process: Peuker Douglas Stream Definition 21. 6th input is #cells tributary needed to form stream.
 arcpy.PeukerDouglasStreamDef_TDEM(cubdemfel_tif, cubdemp_tif, "0.4", "0.1", "0.05", "50", "true", cubdem_Outletmv, "", cubdemad8_tif, "8", cubdemss21_tif, cubdemssa21_tif, cubdemsrc21_tif, cubdemdrp21_txt, "true", "5", "500", "10", "true")
 
 # Process: Stream Reach And Watershed 22
 arcpy.StreamReachAndWatershed_TDEM(cubdemfel_tif, cubdemp_tif, cubdemad8_tif, cubdemsrc21_tif, cubdem_Outletmv, "false", "8", cubdemord22_tif, cubdemtree22_txt, cubdemcoord22_txt, cubdemnet22_shp, cubdemw22_tif)
 
+
 # Process: Raster to Polygon
-tempEnvironment0 = arcpy.env.newPrecision
-arcpy.env.newPrecision = "SINGLE"
-tempEnvironment1 = arcpy.env.autoCommit
-arcpy.env.autoCommit = "1000"
-tempEnvironment2 = arcpy.env.XYResolution
-arcpy.env.XYResolution = ""
-tempEnvironment3 = arcpy.env.processingServerUser
-arcpy.env.processingServerUser = ""
-tempEnvironment4 = arcpy.env.XYDomain
-arcpy.env.XYDomain = ""
-tempEnvironment5 = arcpy.env.processingServerPassword
-arcpy.env.processingServerPassword = ""
-tempEnvironment6 = arcpy.env.scratchWorkspace
-arcpy.env.scratchWorkspace = "C:\\Users\\jenny.mital\\Documents\\ArcGIS\\Default.gdb"
-tempEnvironment7 = arcpy.env.cartographicPartitions
-arcpy.env.cartographicPartitions = ""
-tempEnvironment8 = arcpy.env.terrainMemoryUsage
-arcpy.env.terrainMemoryUsage = "false"
-tempEnvironment9 = arcpy.env.MTolerance
-arcpy.env.MTolerance = ""
-tempEnvironment10 = arcpy.env.compression
-arcpy.env.compression = "LZ77"
-tempEnvironment11 = arcpy.env.coincidentPoints
-arcpy.env.coincidentPoints = "MEAN"
-tempEnvironment12 = arcpy.env.randomGenerator
-arcpy.env.randomGenerator = "0 ACM599"
-tempEnvironment13 = arcpy.env.outputCoordinateSystem
-arcpy.env.outputCoordinateSystem = ""
-tempEnvironment14 = arcpy.env.rasterStatistics
-arcpy.env.rasterStatistics = "STATISTICS 1 1"
-tempEnvironment15 = arcpy.env.ZDomain
-arcpy.env.ZDomain = ""
-tempEnvironment16 = arcpy.env.transferDomains
-arcpy.env.transferDomains = "false"
-tempEnvironment17 = arcpy.env.resamplingMethod
-arcpy.env.resamplingMethod = "NEAREST"
-tempEnvironment18 = arcpy.env.snapRaster
-arcpy.env.snapRaster = ""
-tempEnvironment19 = arcpy.env.projectCompare
-arcpy.env.projectCompare = "NONE"
-tempEnvironment20 = arcpy.env.cartographicCoordinateSystem
-arcpy.env.cartographicCoordinateSystem = "PROJCS['NAD_1927_UTM_Zone_12N',GEOGCS['GCS_North_American_1927',DATUM['D_North_American_1927',SPHEROID['Clarke_1866',6378206.4,294.9786982]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Transverse_Mercator'],PARAMETER['False_Easting',500000.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',-111.0],PARAMETER['Scale_Factor',0.9996],PARAMETER['Latitude_Of_Origin',0.0],UNIT['Meter',1.0]]"
-tempEnvironment21 = arcpy.env.configKeyword
-arcpy.env.configKeyword = ""
-tempEnvironment22 = arcpy.env.outputZFlag
-arcpy.env.outputZFlag = "Same As Input"
-tempEnvironment23 = arcpy.env.qualifiedFieldNames
-arcpy.env.qualifiedFieldNames = "true"
-tempEnvironment24 = arcpy.env.tileSize
-arcpy.env.tileSize = "128 128"
-tempEnvironment25 = arcpy.env.parallelProcessingFactor
-arcpy.env.parallelProcessingFactor = ""
-tempEnvironment26 = arcpy.env.pyramid
-arcpy.env.pyramid = "PYRAMIDS -1 NEAREST DEFAULT 75 NO_SKIP"
-tempEnvironment27 = arcpy.env.referenceScale
-arcpy.env.referenceScale = ""
-tempEnvironment28 = arcpy.env.processingServer
-arcpy.env.processingServer = ""
-tempEnvironment29 = arcpy.env.extent
-arcpy.env.extent = "DEFAULT"
-tempEnvironment30 = arcpy.env.XYTolerance
-arcpy.env.XYTolerance = ""
-tempEnvironment31 = arcpy.env.tinSaveVersion
-arcpy.env.tinSaveVersion = "CURRENT"
-tempEnvironment32 = arcpy.env.nodata
-arcpy.env.nodata = "NONE"
-tempEnvironment33 = arcpy.env.MDomain
-arcpy.env.MDomain = ""
-tempEnvironment34 = arcpy.env.spatialGrid1
-arcpy.env.spatialGrid1 = "0"
-tempEnvironment35 = arcpy.env.cellSize
-arcpy.env.cellSize = "MAXOF"
-tempEnvironment36 = arcpy.env.outputZValue
-arcpy.env.outputZValue = ""
-tempEnvironment37 = arcpy.env.outputMFlag
-arcpy.env.outputMFlag = "Same As Input"
-tempEnvironment38 = arcpy.env.geographicTransformations
-arcpy.env.geographicTransformations = "NAD_1927_To_NAD_1983_NADCON;NAD_1927_To_NAD_1983_NADCON"
-tempEnvironment39 = arcpy.env.spatialGrid2
-arcpy.env.spatialGrid2 = "0"
-tempEnvironment40 = arcpy.env.ZResolution
-arcpy.env.ZResolution = ""
-tempEnvironment41 = arcpy.env.mask
-arcpy.env.mask = ""
-tempEnvironment42 = arcpy.env.spatialGrid3
-arcpy.env.spatialGrid3 = "0"
-tempEnvironment43 = arcpy.env.maintainSpatialIndex
-arcpy.env.maintainSpatialIndex = "false"
-tempEnvironment44 = arcpy.env.workspace
-arcpy.env.workspace = "C:\\Users\\jenny.mital\\Documents\\ArcGIS\\Default.gdb"
-tempEnvironment45 = arcpy.env.MResolution
-arcpy.env.MResolution = ""
-tempEnvironment46 = arcpy.env.derivedPrecision
-arcpy.env.derivedPrecision = "HIGHEST"
-tempEnvironment47 = arcpy.env.ZTolerance
-arcpy.env.ZTolerance = ""
-arcpy.RasterToPolygon_conversion(cubdemw22_tif, subwatersheds_shp, "SIMPLIFY", "Value")
-arcpy.env.newPrecision = tempEnvironment0
-arcpy.env.autoCommit = tempEnvironment1
-arcpy.env.XYResolution = tempEnvironment2
-arcpy.env.processingServerUser = tempEnvironment3
-arcpy.env.XYDomain = tempEnvironment4
-arcpy.env.processingServerPassword = tempEnvironment5
-arcpy.env.scratchWorkspace = tempEnvironment6
-arcpy.env.cartographicPartitions = tempEnvironment7
-arcpy.env.terrainMemoryUsage = tempEnvironment8
-arcpy.env.MTolerance = tempEnvironment9
-arcpy.env.compression = tempEnvironment10
-arcpy.env.coincidentPoints = tempEnvironment11
-arcpy.env.randomGenerator = tempEnvironment12
-arcpy.env.outputCoordinateSystem = tempEnvironment13
-arcpy.env.rasterStatistics = tempEnvironment14
-arcpy.env.ZDomain = tempEnvironment15
-arcpy.env.transferDomains = tempEnvironment16
-arcpy.env.resamplingMethod = tempEnvironment17
-arcpy.env.snapRaster = tempEnvironment18
-arcpy.env.projectCompare = tempEnvironment19
-arcpy.env.cartographicCoordinateSystem = tempEnvironment20
-arcpy.env.configKeyword = tempEnvironment21
-arcpy.env.outputZFlag = tempEnvironment22
-arcpy.env.qualifiedFieldNames = tempEnvironment23
-arcpy.env.tileSize = tempEnvironment24
-arcpy.env.parallelProcessingFactor = tempEnvironment25
-arcpy.env.pyramid = tempEnvironment26
-arcpy.env.referenceScale = tempEnvironment27
-arcpy.env.processingServer = tempEnvironment28
-arcpy.env.extent = tempEnvironment29
-arcpy.env.XYTolerance = tempEnvironment30
-arcpy.env.tinSaveVersion = tempEnvironment31
-arcpy.env.nodata = tempEnvironment32
-arcpy.env.MDomain = tempEnvironment33
-arcpy.env.spatialGrid1 = tempEnvironment34
-arcpy.env.cellSize = tempEnvironment35
-arcpy.env.outputZValue = tempEnvironment36
-arcpy.env.outputMFlag = tempEnvironment37
-arcpy.env.geographicTransformations = tempEnvironment38
-arcpy.env.spatialGrid2 = tempEnvironment39
-arcpy.env.ZResolution = tempEnvironment40
-arcpy.env.mask = tempEnvironment41
-arcpy.env.spatialGrid3 = tempEnvironment42
-arcpy.env.maintainSpatialIndex = tempEnvironment43
-arcpy.env.workspace = tempEnvironment44
-arcpy.env.MResolution = tempEnvironment45
-arcpy.env.derivedPrecision = tempEnvironment46
-arcpy.env.ZTolerance = tempEnvironment47
+arcpy.RasterToPolygon_conversion(cubdemw22_tif, subwatersheds_shp, "SIMPLIFY", "Value")  #convert raster to polygon
 
 # Process: Add Geometry Attributes
 arcpy.AddGeometryAttributes_management(subwatersheds_shp, "AREA", "", "ACRES", "")
+
+#merge polygons with area < XX ac with the largest adjacent polygon 
+#http://resources.arcgis.com/en/help/main/10.1/index.html#//00170000005p000000
+#1. apply query to select all small polygons.
+#2. run eliminate
+
+"""
+arcpy.MakeFeatureLayer_management("blockgrp", "blocklayer")
+arcpy.SelectLayerByAttribute_management("blocklayer", "NEW_SELECTION", 
+                                        '"Area_Sq_Miles" < 0.15')
+arcpy.Eliminate_management("blocklayer", "C:/output/output.gdb/eliminate_output", 
+                           "LENGTH", '"OBJECTID" = 9')
+"""
+
+
+
+
+
+
+
 
 print "done"
