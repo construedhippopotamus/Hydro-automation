@@ -8,24 +8,15 @@
 # ---------------------------------------------------------------------------
 
 
-#next: 
+#next:
 
-get user input and pass to function to set path.
-#check if files exist and prompt user to select new destination if they do
+#add a stop in check exist statement to let user change path check before it executes. try except???
 #currently this assumes outlet and dem are both in same folder as outputs - add message to user?
-#add message box that says "done"
 
-#docker to package? install TauDEM in docker?
-
-#merge tiny pieces of area with surrounding polygons.
-
-#comment code. standardize names to be used for any project
-
+#comment code. standardize names to be used for any project - input var for name
 #changed the following to "path" - see if it works!
 #arcpy.env.workspace , arcpy.env.scratchWorkspace
-
 !!!!!!!!!!!!!!!!!!!!! DOES THIS NEED SPATIAL ANALYST CHECKED OUT?!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 """
 
 
@@ -33,12 +24,9 @@ get user input and pass to function to set path.
 import arcpy
 import ctypes  # An included library with Python install.
 import os
- 
+
 # Load required TauDEM toolboxes - change path
 arcpy.ImportToolbox("C:/Program Files/TauDEM/TauDEM5Arc/TauDEM Tools.tbx")
-
-# add a message box later
-#ctypes.windll.user32.MessageBoxW(0, "Your text", "Your title", 1)
 
 #set working directory and workspaces
 path = r"C:\Program Files\TauDEM\Demo"
@@ -46,7 +34,6 @@ path = r"C:\Program Files\TauDEM\Demo"
 arcpy.env.scratchWorkspace = path        # orig - can change back"C:\\Users\\jenny.mital\\Documents\\ArcGIS\\Default.gdb"
 
 arcpy.env.workspace = path               # orig - can change back: "C:\\Users\\jenny.mital\\Documents\\ArcGIS\\Default.gdb"
-
 
 os.chdir(path)
 
@@ -89,6 +76,25 @@ cubdemnet22_shp = "cubdemnet22.shp"
 cubdemw22_tif = "cubdemw22.tif"
 
 subwatersheds_shp = "subwatersheds.shp"  #orig - can change back:  r"C:\Program Files\TauDEM\Demo\subwatersheds.shp"
+select_sub = "subwatersheds_select.shp"
+out_sub = "subwatersheds_processed.shp"
+
+
+#check if output shapefiles exist - if yes, they will be overwritten unless path is changed.
+shplist = [subwatersheds_shp, out_sub, cubdemnet22_shp, cubdemnet19_shp]
+
+#check iterator
+i=0
+for shp in shplist:
+    try:
+        shp
+    except NameError:
+        pass
+    else:
+        print "Shapefiles exist in folder. Select another folder or files will be overwritten."
+        quit() #remove later
+
+        #tell user to input new path or press key for try again and then continue
 
 # Process: Pit Remove 3-8
 arcpy.PitRemove_TDEM(cubdem, "", "", "8", cubdemfel_tif)
@@ -139,24 +145,14 @@ arcpy.RasterToPolygon_conversion(cubdemw22_tif, subwatersheds_shp, "SIMPLIFY", "
 # Process: Add Geometry Attributes
 arcpy.AddGeometryAttributes_management(subwatersheds_shp, "AREA", "", "ACRES", "")
 
-#merge polygons with area < XX ac with the largest adjacent polygon 
-#http://resources.arcgis.com/en/help/main/10.1/index.html#//00170000005p000000
-#1. apply query to select all small polygons.
-#2. run eliminate
 
-"""
-arcpy.MakeFeatureLayer_management("blockgrp", "blocklayer")
-arcpy.SelectLayerByAttribute_management("blocklayer", "NEW_SELECTION", 
-                                        '"Area_Sq_Miles" < 0.15')
-arcpy.Eliminate_management("blocklayer", "C:/output/output.gdb/eliminate_output", 
-                           "LENGTH", '"OBJECTID" = 9')
-"""
+#merge polygons with area < 1 acre with the adjacent polygon with longest shared side length. May want to change area threshold
+arcpy.MakeFeatureLayer_management(subwatersheds_shp, select_sub)
 
+#merge polygons with area < 1 ac
+arcpy.SelectLayerByAttribute_management(select_sub, "NEW_SELECTION", '"POLY_AREA" < 1.0')
 
-
-
-
-
-
+# "LENGTH" = merge with adjacent of longest sidelength
+arcpy.Eliminate_management(select_sub, out_sub, "LENGTH", "", "")
 
 print "done"
