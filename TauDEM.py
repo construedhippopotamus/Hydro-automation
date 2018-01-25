@@ -10,26 +10,41 @@
 
 #next:
 
-#add a stop in check exist statement to let user change path check before it executes. try except???
 #currently this assumes outlet and dem are both in same folder as outputs - add message to user?
 
 #comment code. standardize names to be used for any project - input var for name
-#changed the following to "path" - see if it works!
-#arcpy.env.workspace , arcpy.env.scratchWorkspace
+
 !!!!!!!!!!!!!!!!!!!!! DOES THIS NEED SPATIAL ANALYST CHECKED OUT?!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+Instructions:
+    - TauDEM and ArcGIS must be installed to use
+    - update path to TauDEM toolbox if different
+    - update path to folder path that houses DEM and outlet point shapefile(s)
+    - update filename to desired name of output files.
+    - do not overwrite files - it causes an error.
+    - output shapefiles are not projected.
+
+Notes: script tested on ArcGIS 10.4.1
 """
+
+
+
 
 
 # Import arcpy module
 import arcpy
-import ctypes  # An included library with Python install.
 import os
 
-# Load required TauDEM toolboxes - change path
+
+""" Load required TauDEM toolboxes - change path """
 arcpy.ImportToolbox("C:/Program Files/TauDEM/TauDEM5Arc/TauDEM Tools.tbx")
 
-#set working directory and workspaces
+""" set working directory and workspaces  """
 path = r"C:\Program Files\TauDEM\Demo"
+
+""" update to desired filename """
+filename = "cub"
 
 arcpy.env.scratchWorkspace = path        # orig - can change back"C:\\Users\\jenny.mital\\Documents\\ArcGIS\\Default.gdb"
 
@@ -40,7 +55,7 @@ os.chdir(path)
 # Local variables:
 
 #INPUT RASTER
-cubdem = "cubdem"
+inDEM = "cubdem"
 #INPUT OUTLET POINT SHAPEFILE
 CubGauge_shp = "CubGauge.shp"
 
@@ -75,29 +90,28 @@ cubdemcoord22_txt = "cubdemcoord22.txt"
 cubdemnet22_shp = "cubdemnet22.shp"
 cubdemw22_tif = "cubdemw22.tif"
 
-subwatersheds_shp = "subwatersheds.shp"  #orig - can change back:  r"C:\Program Files\TauDEM\Demo\subwatersheds.shp"
+subwatersheds_shp = "subwatersheds.shp"
 select_sub = "subwatersheds_select.shp"
 out_sub = "subwatersheds_processed.shp"
 
-
+#fix outlist!!!!
 #check if output shapefiles exist - if yes, they will be overwritten unless path is changed.
-shplist = [subwatersheds_shp, out_sub, cubdemnet22_shp, cubdemnet19_shp]
+outlist = [subwatersheds_shp, out_sub, cubdemnet22_shp, cubdemnet19_shp]
 
 #check iterator
 i=0
-for shp in shplist:
+for file in outlist:
     try:
-        shp
+        file
+        print "Output files exist in folder. Change name or path."
+        quit()
     except NameError:
         pass
-    else:
-        print "Shapefiles exist in folder. Select another folder or files will be overwritten."
-        quit() #remove later
 
-        #tell user to input new path or press key for try again and then continue
+print "Delineating watershed"
 
 # Process: Pit Remove 3-8
-arcpy.PitRemove_TDEM(cubdem, "", "", "8", cubdemfel_tif)
+arcpy.PitRemove_TDEM(inDEM, "", "", "8", cubdemfel_tif)
 
 # Process: D8 Flow Directions 9
 arcpy.D8FlowDir_TDEM(cubdemfel_tif, "8", cubdemp_tif, cubdemsd8_tif)
