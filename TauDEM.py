@@ -12,8 +12,7 @@
 
 #next:
 
-#check with other test DEMs
-#test advanced tools
+#check with other test DEMs, check with multiple outlets
 
 Instructions:
     - TauDEM and ArcGIS must be installed to use
@@ -24,6 +23,7 @@ Instructions:
     - output shapefiles are not projected.
 
 Notes: script tested on ArcGIS 10.4.1 using advanced desktop license
+Tested with: cubdem, logan,
 """
 
 
@@ -40,16 +40,16 @@ import arcinfo         #checks out advanced license needed for last step
 arcpy.ImportToolbox("C:/Program Files/TauDEM/TauDEM5Arc/TauDEM Tools.tbx")
 
 """ set working directory and workspaces  """
-path = r"C:\Program Files\TauDEM\Demo"
+path = r"C:\Program Files\TauDEM\Eno"
 
 """ update to desired filename """
-filename = "test"
+filename = "Eno"
 
 """ update INPUT RASTER - put full path and name if not in same folder as path """
-inDEM = "cubdem"
+inDEM = "enogeo.tif"
 
 """ update INPUT OUTLET POINT SHAPEFILE. if no outlet, it should be "". Put full path and name if not in same folder as path  """
-Gauge_shp = "CubGauge.shp"
+Gauge_shp = ""
 
 arcpy.env.scratchWorkspace = path
 
@@ -128,8 +128,21 @@ arcpy.D8ContributingArea_TDEM(p_tif, "", "", "true", "8", ad8_tif)
 # Process: Stream Definition By Threshold 14
 arcpy.StreamDefByThreshold_TDEM(ad8_tif, "", "100", "8", src_tif)
 
-# Process: Move Outlets To Streams 16
-arcpy.MoveOutletsToStreams_TDEM(p_tif, src_tif, Gauge_shp, "50", "8", Outletmv)
+if os.path.isfile(Gauge_shp) == True:
+    # Process: Move Outlets To Streams 16
+    arcpy.MoveOutletsToStreams_TDEM(p_tif, src_tif, Gauge_shp, "50", "8", Outletmv)
+else:
+    Outletmv = ""
+    """
+#if outlet file exists, move outlet
+try:
+    Gauge_shp
+except NameError:
+    Outletmv = ""
+else:
+    # Process: Move Outlets To Streams 16
+    arcpy.MoveOutletsToStreams_TDEM(p_tif, src_tif, Gauge_shp, "50", "8", Outletmv)
+  """
 
 # Process: D8 Contributing Area 17
 arcpy.D8ContributingArea_TDEM(p_tif, Outletmv, "", "true", "8", ssa_tif)
@@ -152,6 +165,7 @@ arcpy.StreamReachAndWatershed_TDEM(fel_tif, p_tif, ad8_tif, src21_tif, Outletmv,
 
 
 #post processing
+#TauDEM toolbox has a builtin raster --> shapefile converter, but it just calls raster --> polygon and doesn't merge tiny pieces.
 
 # Process: Raster to Polygon
 arcpy.RasterToPolygon_conversion(w22_tif, subwatersheds_shp, "SIMPLIFY", "Value")  #convert raster to polygon
