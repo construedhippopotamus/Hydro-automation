@@ -23,12 +23,11 @@ Instructions:
     - output shapefiles are not projected.
 
 Notes: script tested on ArcGIS 10.4.1 using advanced desktop license
-Tested with: cubdem, logan,
+All test DEMS were either DEM or tif.
+Tested with: cubdem, logan, ches1, SCLA base_z , la entrada
+
+eno: error calculating area of polygons in shapefile - due to projection. hasn't occurred for anything else.
 """
-
-
-
-
 
 # Import arcpy module
 import arcpy
@@ -40,13 +39,13 @@ import arcinfo         #checks out advanced license needed for last step
 arcpy.ImportToolbox("C:/Program Files/TauDEM/TauDEM5Arc/TauDEM Tools.tbx")
 
 """ set working directory and workspaces  """
-path = r"C:\Program Files\TauDEM\Eno"
+path = r"C:\Program Files\TauDEM\SCLA"
 
 """ update to desired filename """
-filename = "Eno"
+filename = "SCLA"
 
 """ update INPUT RASTER - put full path and name if not in same folder as path """
-inDEM = "enogeo.tif"
+inDEM = "base_z.tif"
 
 """ update INPUT OUTLET POINT SHAPEFILE. if no outlet, it should be "". Put full path and name if not in same folder as path  """
 Gauge_shp = ""
@@ -133,16 +132,8 @@ if os.path.isfile(Gauge_shp) == True:
     arcpy.MoveOutletsToStreams_TDEM(p_tif, src_tif, Gauge_shp, "50", "8", Outletmv)
 else:
     Outletmv = ""
-    """
-#if outlet file exists, move outlet
-try:
-    Gauge_shp
-except NameError:
-    Outletmv = ""
-else:
-    # Process: Move Outlets To Streams 16
-    arcpy.MoveOutletsToStreams_TDEM(p_tif, src_tif, Gauge_shp, "50", "8", Outletmv)
-  """
+
+
 
 # Process: D8 Contributing Area 17
 arcpy.D8ContributingArea_TDEM(p_tif, Outletmv, "", "true", "8", ssa_tif)
@@ -169,6 +160,7 @@ arcpy.StreamReachAndWatershed_TDEM(fel_tif, p_tif, ad8_tif, src21_tif, Outletmv,
 
 # Process: Raster to Polygon
 arcpy.RasterToPolygon_conversion(w22_tif, subwatersheds_shp, "SIMPLIFY", "Value")  #convert raster to polygon
+
 
 # Process: Add Geometry Attributes
 arcpy.AddGeometryAttributes_management(subwatersheds_shp, "AREA", "", "ACRES", "")
