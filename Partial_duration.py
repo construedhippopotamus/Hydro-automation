@@ -1,3 +1,7 @@
+#technically, can look at TW list of peaks for the occurrence date, and that is the depth corresponding to that year.
+#can back calc using existing condition.
+
+
 #Calculate partial duration analysis for San Diego hydromod
 
 # San Diego HMP Manual Ch 6, pg 6-25
@@ -141,24 +145,26 @@ print("FINAL RESULT", sorted[:-1])
 
 # San Diego HMP Manual Ch 6, pg 6-25
 
-#1. sort values large to small
 #2. Flow frequency with Cunnane Eqn: Probability = P = (i-0.4)/(n+0.2)
 #   i = Position of the peak whose probability is desired
-#   n = number of years analyzed = 1-10 = 10
+#   n = number of years analyzed = 57 (years in flow record)
 
-# ASSUMPTIONS: number of peaks analyzed MUST be less than or equal to n.
+# ASSUMPTIONS: number of peaks analyzed MUST be equal to n.
 
-n = 10 #years
-list = [10, 9, 8, 7,6,5,4,3,2,1]
+n = 57 #years in flow record
 
-for i in range(0, len(list)):
+for i in range(0, 57):
+    #rank = i + 1
     P = ((i+1)-0.4) / (n+0.2)
     #print (P)
 
+#QUESTIONS:
+#       will I get 57 peaks from flow record? probably not. how to assign numbers if not right number of peaks?
+#NEXT: zip the 57 peaks to P1-P57. Interpolate to get Q1-Q10 (though TW didn't use linear interpolation, judging by Q10)
+#1. divide flows of interest (0.1 * Q2 --> Q10) into 100 equal intervals
+#2. count number of hours that Q exceeds each of the 100 Qs. Do for existing Qs in this script --> sort and then find first exceedance; subtract.
+#2. for proposed, use a different script: sort and count.
 
-
-#NOTE:  The way this is currently set up, there will be more peaks than n, which doesn't work...
-# not sure what to do.
 
 
 
