@@ -75,7 +75,7 @@ for event in series:
 
 #peaklist.append(peak)  #peak from last event
 #del(peaklist[0])
-print("peaklist", peaklist)
+#print("peaklist", peaklist)
 #print("HMP peak:", peaklist)
 
 
@@ -85,21 +85,22 @@ def TWmethod(series, low):
     peaklistTW = []
     ii = 0
 
-    for ii in range(0, len(series)):
-        #print (series[ii][1])
-
+    while ii < len(series):
 
         if series[ii][1] > peakTW and series[ii][1] > low:
             peakTW = series[ii][1]
-            #print("test peak:", peakTW)
 
             #check if next 12 values are decreasing by getting their max and comparing to current peak
             if series[ii + 1][1] < series[ii][1]:
                 maxnext = max([zz[1] for zz in series[1+ii : 12+ii]])
                 if maxnext < peakTW:
                     peaklistTW.append(peakTW)
+
                     peakTW = 0
-        ii += 1
+                    ii+= 11 #jump forward 12 - extra iterator below.
+
+        ii+= 1
+
 
     print "\n" "Tory Walker Peaks", peaklistTW
 
