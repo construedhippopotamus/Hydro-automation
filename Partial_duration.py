@@ -1,3 +1,6 @@
+#Processes precip gage depth vs time data.
+
+
 #technically, can look at TW list of peaks for the occurrence date, and that is the depth corresponding to that year.
 #can back calc using existing condition.
 
@@ -17,13 +20,15 @@
 
 import os
 import csv
+import openpyxl
+from openpyxl import Workbook
 
-path = r'C:\Users\Pizzagirl\Documents\programming\python\hydro_work'
-indata = 'short.csv'
+path = r'H:\pdata\160817\Calcs\Strmwater\Water Quality\Compare gage data'
+indata = 'Oceanside_gage_SDHM.csv'
 low = 0.01
 sep = 24  #24hr between events
 
-time = []
+date = []
 Q = []
 Qpart = []
 dry = 24  #number of dry hours - start at 24 to catch first event, which can occur at hr = 0
@@ -36,60 +41,102 @@ with open(indata, 'r') as f:
     csvreader = csv.reader(f, delimiter = ',')
     for row in csvreader:
         try:
-            time.append(row[2][-5:])
-            Q.append(float(row[3]))
+            date.append(row[0])
+            Q.append(float(row[2]))
         except ValueError:
             #print("can't convert to float:", row)
             pass
 
-series = list(zip(time, Q))  #just need Qs if data is hourly, but leave for now.
-#print (series)
+series = list(zip(date, Q))  #just need Qs if data is hourly, but leave for now.
+#print ("series", series)
 
 #HMP manual way of determining series:
 
 for event in series:
-    if event[1] < low:
+    if event[1] <= low:
         dry+= 1   #Count dry hour
     if event[1] > low:
-        #print("dry", dry)
+        #print("rain", event[1])
+
         if dry >= 24:  #new event
-            peaklist.append(peak)  # append peak from last event
-        else:   #same event because less than 24 dry hours have passed
-            if event[1] > peak:
-                peak = event[1]
+
+            if peak > 0:
+                peaklist.append(peak)  # append peak from last event
+                #print("peak appended", peak)
+                peak = 0    #reset peak for current storm
+        #else:   #same event because less than 24 dry hours have passed
+        if event[1] > peak:
+            peak = event[1]
+            #print("current peak", peak)
+
         dry = 0  #reset dry hours
 
+#print("len list", len(peaklist))
 
-peaklist.append(peak)  #peak from last event
-del(peaklist[0])
-
-print("HMP peak:", peaklist)
+#peaklist.append(peak)  #peak from last event
+#del(peaklist[0])
+print("peaklist", peaklist)
+#print("HMP peak:", peaklist)
 
 
 #Tory walkers way of determining peaks:
-def TWmethod(series):
+def TWmethod(series, low):
     peakTW = 0
     peaklistTW = []
     ii = 0
 
     for ii in range(0, len(series)):
         #print (series[ii][1])
-        if series[ii][1] > peakTW:
+
+
+        if series[ii][1] > peakTW and series[ii][1] > low:
             peakTW = series[ii][1]
             #print("test peak:", peakTW)
 
-            #check if next 12 values are decreasing:
+            #check if next 12 values are decreasing by getting their max and comparing to current peak
             if series[ii + 1][1] < series[ii][1]:
-                max1 = max([zz[1] for zz in series[1+ii : 12+ii]])
-                if max1 < peakTW:
+                maxnext = max([zz[1] for zz in series[1+ii : 12+ii]])
+                if maxnext < peakTW:
                     peaklistTW.append(peakTW)
+                    peakTW = 0
         ii += 1
 
-    print ("Tory Walker Peaks", peaklistTW)
+    print "\n" "Tory Walker Peaks", peaklistTW
 
     return(peaklistTW)
 
+#write peak lists to file for comparison using openpyxl
+wb = Workbook()
+ws = wb.active
 
+#set column titles
+ws.cell(row=1, column=1).value="San Diego Manual: 24hr dry btwn storms"
+ws.cell(row=1, column=4).value="Tory Walker: 12hr buffer after peak"
+
+ws.cell(row=2, column=1).value="Date"
+ws.cell(row=2, column=2).value="Depth, in"
+
+ws.cell(row=2, column=4).value="Date"
+ws.cell(row=2, column=5).value="Depth, in"
+
+
+peaklistTW = TWmethod(series, low)
+
+i=3
+for item in peaklist:
+    ws.cell(row=i, column=2).value = item
+    i+=1
+
+i=3
+for item in peaklistTW:
+    ws.cell(row=i, column=5).value = item
+    i+=1
+
+
+wb.save('Compare_peak.xlsx')
+
+
+"""
 #Calculate flow frequencies for San Diego hydromod
 
 # San Diego HMP Manual Ch 6, pg 6-25
@@ -102,6 +149,7 @@ def TWmethod(series):
 # ASSUMPTIONS: number of peaks analyzed MUST be less than or equal to n.
 
 #sort Q list
+
 
 def break1(list, sorted):
     num = len(list)
@@ -138,7 +186,7 @@ sorted = [0]
 break1(peaklist, sorted)
 
 #delete last element - it is a zero I had to add for comparison.
-print("FINAL RESULT", sorted[:-1])
+#print("FINAL RESULT", sorted[:-1])
 
 
 #Calculate flow frequencies for San Diego hydromod
@@ -150,6 +198,7 @@ print("FINAL RESULT", sorted[:-1])
 #   n = number of years analyzed = 57 (years in flow record)
 
 # ASSUMPTIONS: number of peaks analyzed MUST be equal to n.
+
 
 n = 57 #years in flow record
 
@@ -166,5 +215,5 @@ for i in range(0, 57):
 #2. for proposed, use a different script: sort and count.
 
 
-
+"""
 
