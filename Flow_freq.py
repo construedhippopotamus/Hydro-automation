@@ -193,9 +193,9 @@ def Qprocess(path, datafile):
     Q10 = Q10low + (10-8.666)* (Q10up - Q10low) / (10.214285714285715-8.666666666666668)
 
     #Make list of 100 comparison points from 0.1*Q2 --> Q100
-    Qcompare = [(Q10 - 0.1*Q2)*y/100 + 0.1*Q2 for y in range(0,101)]
-
-    #print("Comparison Qs:", Qcompare)
+    Qcompare = [(Q10 - 0.1*Q2)*y/99 + 0.1*Q2 for y in range(0, 100)]
+	
+    print(datafile, "Q2", Q2, "Q10", Q10)  
 
     return Qcompare, Q
 
