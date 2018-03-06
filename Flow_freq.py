@@ -188,7 +188,8 @@ def Qprocess(path, datafile):
     Q2 =  rankQs.get(2.0)
     Q10up = rankQs.get(10.214285714285715)
     Q10low = rankQs.get(8.666666666666668)
-
+    
+    #this is 101 comparison points technically... need to divide by 99 because zero is counted. Fix later.
     Q10 = Q10low + (10-8.666)* (Q10up - Q10low) / (10.214285714285715-8.666666666666668)
 
     #Make list of 100 comparison points from 0.1*Q2 --> Q100
