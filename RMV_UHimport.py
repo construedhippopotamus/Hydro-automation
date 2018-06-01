@@ -3,7 +3,11 @@
 
 @author: Jenny
 
-Single area unit hydrograph or small area hydrograph import to excel. One tab per hydrograph. 
+Single area unit hydrograph or small area hydrograph import to excel. Summary tab and one tab per hydrograph. 
+
+python 2.7
+
+Requires installation of openpyxl
 
 """
 import os
@@ -14,9 +18,9 @@ import cmd
 
 base = r"C:\Users\Pizzagirl\Documents\programming\UH_extractQ"
 
-#change to folder names if different
+#if you want to import from nested folder structure, script will import from foldernames in pathlist:
 pathlist=['2-YR', '5-YR', '10-YR', '25-YR', '50-YR', '100-YR']
-#pathlist = ['100-YR']
+#pathlist = ['full UH']
 #make new workbook to save data
 wb = Workbook()
 
@@ -32,9 +36,43 @@ summary.cell(row=2, column=4).value="Year"
 j=3
 
 #Ask user if UH should be imported
-userinput = raw_input("Print N to only output summary. Default outputs summary and hydrographs.")
-print(userinput)
+userinput = raw_input("Print N to only output summary. Default outputs summary and hydrographs. ")
 
+userbase = str(raw_input("Paste/type in path to folder holding hydrographs to import. \
+                          Hydrographs in nested folders will not be imported. \n"))
+
+#check if path is valid
+if os.path.isdir(userbase):
+    base = userbase  #overwrite base in script
+else: 
+    print("Invalid path entered - using path in script. \n")
+    
+print("Pathlist:", pathlist)
+usernested = str(raw_input("\n Enter Y to import UH from all folders in pathlist. \
+                         Otherwise only UH in main folder will be imported.  \
+                         Folder names must match pathlist exactly. \n"))
+"""
+if usernested.upper() <> "Y": #if user doesn't want to import from nested folders 2-100yr:
+    pathlist = []    
+"""
+
+
+#Function to check if excel file exists and if so increment name and recheck
+def savename(name, base, counter):
+    #make sure we look in file location
+    os.chdir(base)
+    
+    if os.path.isfile(name + str(counter) + '.xlsx'):
+        counter += 1
+        #name = name + str(counter)
+        return savename(name, base, counter)
+    else:
+        name = name + str(counter)
+        print("worksheet name: ", name)
+        return name
+
+#main function that looks at .res files for all folders in list above
+# and puts all hydrographs in excel (default) and makes a summary table
 for folder in pathlist:
     
     path = os.path.join(base, folder)
@@ -93,11 +131,12 @@ for folder in pathlist:
                     vol.append(str1[12:25].strip("[").strip("'").strip("-"))
                     Q.append(str1[23:33].strip("[").strip("'").strip("-"))
         
-        if userinput.upper() <> "N":  #print hydrograph data
+        #get max values from Q and vol
+        Qmax= float(max(Q[4:]))
+        Volmax = float(max(vol[4:]))
+        
+        if userinput.upper() <> "N":  #print one hydrograph per sheet
             
-            #write output to each sheet
-            Qmax= float(max(Q[4:]))
-            Volmax = float(max(vol[4:]))
             ws.cell(row=2, column=5).value= Volmax            
             ws.cell(row=2, column=6).value= Qmax
             ws.cell(row=2, column=1).value= resfile
@@ -117,12 +156,17 @@ for folder in pathlist:
     
         #update summary sheet iterator
         j=j+1
+    
+#save excel file
+wkshtname='Qsummary'
 
-    wkshtname='Qsummary.xlsx'
-    wb.save(os.path.join(base, wkshtname))
+#try saving with current name, current path. Counter to increment if overwrite
+finalwkshtname = savename(wkshtname, base, 1)
+
+wb.save(os.path.join(base, finalwkshtname + ".xlsx"))
 
 print "done"
 
-""" TO DO: test on regular UH (all tested were small UH), maybe make folder names optional, make import UH a switch
-add overwrite warning for if Qsummary exists (actually, just create new one)
+""" 
+fix option to just import from current folder --> need to fix path.
 """
