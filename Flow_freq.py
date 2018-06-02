@@ -1,3 +1,4 @@
+#FINAL
 #Calculates return periods for existing condition flows.
 
 #Calculate partial duration analysis for San Diego hydromod
@@ -10,17 +11,10 @@
 
 # ASSUMPTIONS: Q data is continuous, hourly data with no gaps.
 
-
-# NOTE: Tory Walkers did this differently from the manual - they got the peak within a 25hr period.
-
 import os
 import csv
 import openpyxl
 from openpyxl import Workbook
-
-#path = r'H:\pdata\160817\Calcs\Strmwater\Water Quality\EPA SWMM 5\Original Tory Walker models'
-#Existing condition Q out file from EPA SWMM 5
-#EXdata = 'PRE_DEV_POC-1_QOUT.TXT'
 
 def Qprocess(path, datafile):
 
@@ -71,71 +65,11 @@ def Qprocess(path, datafile):
                 #print("current peak", peak)
 
             dry = 0  #reset dry hours
-
-    #del(peaklist[0])
-
-    #print("HMP peak:", peaklist)
-
-    """
-    #Tory walkers way of determining peaks:
-    def TWmethod(series, low):
-        peakTW = 0
-        peaklistTW = []
-        ii = 0
-
-        while ii < len(series):
-
-            if series[ii][1] > peakTW and series[ii][1] > low:
-                peakTW = series[ii][1]
-
-                #check if next 12 values are decreasing by getting their max and comparing to current peak
-                if series[ii + 1][1] < series[ii][1]:
-                    maxnext = max([zz[1] for zz in series[1+ii : 12+ii]])
-                    if maxnext < peakTW:
-                        peaklistTW.append(peakTW)
-
-                        peakTW = 0
-                        ii+= 11 #jump forward 12 - extra iterator below.
-
-            ii+= 1
-
-
-        #print "\n" "Tory Walker Peaks", peaklistTW
-
-        return(peaklistTW)
-
-    #peaklistTW = TWmethod(series, low)
-
-    #write peak lists to file for comparison using openpyxl --> done
-
-    wb = Workbook()
-    ws = wb.active
-
-    #set column titles
-    ws.cell(row=1, column=1).value="San Diego Manual: 24hr dry btwn storms"
-    ws.cell(row=1, column=4).value="Tory Walker: 12hr buffer after peak"
-
-    ws.cell(row=2, column=1).value="Date"
-    ws.cell(row=2, column=2).value="Depth, in"
-
-    ws.cell(row=2, column=4).value="Date"
-    ws.cell(row=2, column=5).value="Depth, in"
-
-
-    i=3
-    for item in peaklist:
-        ws.cell(row=i, column=2).value = item
-        i+=1
-
-    i=3
-    for item in peaklistTW:
-        ws.cell(row=i, column=5).value = item
-        i+=1
-
-
-    wb.save('Compare_peak.xlsx')
-
-    """
+            
+    #capture last peak
+    peaklist.append(peak)
+    
+    print("Peaks: ", peaklist)
 
     #Calculate flow frequencies for San Diego hydromod
 
@@ -146,16 +80,7 @@ def Qprocess(path, datafile):
     #   i = Position of the peak whose probability is desired
     #   n = number of years analyzed = 1-10 = 10
 
-    # ASSUMPTIONS: number of peaks analyzed MUST be less than or equal to n.
-
-
     #Calculate flow frequencies for San Diego hydromod
-
-    # San Diego HMP Manual Ch 6, pg 6-25
-
-    #2. Flow frequency with Cunnane Eqn: Probability = P = (i-0.4)/(n+0.2)
-    #   i = Position of the peak whose probability is desired
-    #   n = number of years analyzed = 57 (years in flow record)
 
     # ASSUMPTIONS: number of peaks analyzed MUST be equal to n.
 
@@ -195,17 +120,17 @@ def Qprocess(path, datafile):
     #Make list of 100 comparison points from 0.1*Q2 --> Q100
     Qcompare = [(Q10 - 0.1*Q2)*y/99 + 0.1*Q2 for y in range(0, 100)]
 	
-    print(datafile, "Q2", Q2, "Q10", Q10)  
+    #print(datafile, "Q2", Q2, "Q10", Q10)  
 
     return Qcompare, Q
 
 
 """
 #to test as stand-alone:
-path = r'H:\pdata\160817\Calcs\Strmwater\Water Quality\EPA SWMM 5\Original Tory Walker models'
+path = r'C:\Users\Pizzagirl\Documents\Michael Baker\SWMM-delpy\delpy'
 #Existing condition Q out file from EPA SWMM 5
+#datafile = r'TEST111.TXT'
 datafile = 'PRE_DEV_POC-1_QOUT.TXT'
 outputs = Qprocess(path,datafile)
-print outputs[0]
-
+#print outputs[0]
 """
