@@ -36,26 +36,17 @@ summary.cell(row=2, column=4).value="Year"
 j=3
 
 #Ask user if UH should be imported
-userinput = raw_input("Print N to only output summary. Default outputs summary and hydrographs. ")
+userinput = raw_input("Print N to only output summary. Hit enter to output summary and hydrographs. ")
 
 userbase = str(raw_input("Paste/type in path to folder holding hydrographs to import. \
-                          Hydrographs in nested folders will not be imported. \n"))
+                          Hydrographs in any of the following folders will be imported: \
+                          ['2-YR', '5-YR', '10-YR', '25-YR', '50-YR', '100-YR']"))
 
 #check if path is valid
 if os.path.isdir(userbase):
     base = userbase  #overwrite base in script
 else: 
     print("Invalid path entered - using path in script. \n")
-    
-print("Pathlist:", pathlist)
-usernested = str(raw_input("\n Enter Y to import UH from all folders in pathlist. \
-                         Otherwise only UH in main folder will be imported.  \
-                         Folder names must match pathlist exactly. \n"))
-"""
-if usernested.upper() <> "Y": #if user doesn't want to import from nested folders 2-100yr:
-    pathlist = []    
-"""
-
 
 #Function to check if excel file exists and if so increment name and recheck
 def savename(name, base, counter):
@@ -166,7 +157,3 @@ finalwkshtname = savename(wkshtname, base, 1)
 wb.save(os.path.join(base, finalwkshtname + ".xlsx"))
 
 print "done"
-
-""" 
-fix option to just import from current folder --> need to fix path.
-"""
