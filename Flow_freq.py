@@ -1,4 +1,3 @@
-#FINAL
 #Calculates return periods for existing condition flows.
 
 #Calculate partial duration analysis for San Diego hydromod
@@ -11,10 +10,17 @@
 
 # ASSUMPTIONS: Q data is continuous, hourly data with no gaps.
 
+
+# NOTE: Tory Walkers did this differently from the manual - they got the peak within a 25hr period.
+
 import os
 import csv
 import openpyxl
 from openpyxl import Workbook
+
+#path = r'H:\pdata\160817\Calcs\Strmwater\Water Quality\EPA SWMM 5\Original Tory Walker models'
+#Existing condition Q out file from EPA SWMM 5
+#EXdata = 'PRE_DEV_POC-1_QOUT.TXT'
 
 def Qprocess(path, datafile):
 
@@ -65,11 +71,10 @@ def Qprocess(path, datafile):
                 #print("current peak", peak)
 
             dry = 0  #reset dry hours
-            
-    #capture last peak
-    peaklist.append(peak)
-    
-    print("Peaks: ", peaklist)
+
+    peaklist.append(peak) #add last peak
+    #print("peaklist", peaklist)
+
 
     #Calculate flow frequencies for San Diego hydromod
 
@@ -80,7 +85,16 @@ def Qprocess(path, datafile):
     #   i = Position of the peak whose probability is desired
     #   n = number of years analyzed = 1-10 = 10
 
+    # ASSUMPTIONS: number of peaks analyzed MUST be less than or equal to n.
+
+
     #Calculate flow frequencies for San Diego hydromod
+
+    # San Diego HMP Manual Ch 6, pg 6-25
+
+    #2. Flow frequency with Cunnane Eqn: Probability = P = (i-0.4)/(n+0.2)
+    #   i = Position of the peak whose probability is desired
+    #   n = number of years analyzed = 57 (years in flow record)
 
     # ASSUMPTIONS: number of peaks analyzed MUST be equal to n.
 
@@ -105,32 +119,44 @@ def Qprocess(path, datafile):
         R = 1/ P  # return period
         Returnlist.append(R)
 
-
     rankQs = dict(zip(Returnlist, peaklist1))
 
-    #print(rankQs)
+    #print(datafile, rankQs)
+
+    #write rankQs to file for report using openpyxl
+
+    wb = Workbook()
+    ws = wb.active
+    ws.cell(row=1, column=1).value="Return period, years"
+    ws.cell(row=1, column=2).value="Q, cfs"
+
+    j=1
+    for RR in Returnlist:
+        j+=1
+        ws.cell(row=j, column=1).value = RR
+
+	i=1
+    for Qp in peaklist1:
+        i+=1
+        ws.cell(row=i, column=2).value = Qp
+
+
+    wb.save(datafile + 'rankQ.xlsx')
+
+    #dictionary isn't in order by default in python 2.7... would have to use ordered dict.
 
     Q2 =  rankQs.get(2.0)
     Q10up = rankQs.get(10.214285714285715)
     Q10low = rankQs.get(8.666666666666668)
-    
-    #this is 101 comparison points technically... need to divide by 99 because zero is counted. Fix later.
+
     Q10 = Q10low + (10-8.666)* (Q10up - Q10low) / (10.214285714285715-8.666666666666668)
 
     #Make list of 100 comparison points from 0.1*Q2 --> Q100
     Qcompare = [(Q10 - 0.1*Q2)*y/99 + 0.1*Q2 for y in range(0, 100)]
-	
-    #print(datafile, "Q2", Q2, "Q10", Q10)  
+
+
+    print(datafile, "Q2", Q2, "Q10", Q10)
+
 
     return Qcompare, Q
 
-
-"""
-#to test as stand-alone:
-path = r'C:\Users\Pizzagirl\Documents\Michael Baker\SWMM-delpy\delpy'
-#Existing condition Q out file from EPA SWMM 5
-#datafile = r'TEST111.TXT'
-datafile = 'PRE_DEV_POC-1_QOUT.TXT'
-outputs = Qprocess(path,datafile)
-#print outputs[0]
-"""
