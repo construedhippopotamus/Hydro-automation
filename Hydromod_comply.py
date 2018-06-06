@@ -15,13 +15,17 @@ import openpyxl
 from openpyxl import Workbook
 from Flow_freq import Qprocess   #does flow frequency analysis
 
-path = r'H:\pdata\160817\Calcs\Strmwater\Water Quality\EPA SWMM 5\Add DMA1-2_totalarea=9.43ac'
+#100yr model path
+#path = r'H:\pdata\160817\Calcs\Strmwater\Hydraulics\100 Year SWMM Models'
+
+#hydromod model path
+path = r'H:\pdata\160817\Calcs\Strmwater\Water Quality\EPA SWMM 5\FINAL\testscript'
 
 #Existing condition Q out file from EPA SWMM 5
-EXdata = 'PRE_DEV_POC-1_QOUT.TXT'
+EXdata = 'PRE_DEV_POC-2_QOUT.TXT'
 
 #Proposed condition Q out file from EPA SWMM 5
-PRdata = 'POST_DEV_POC-1_QOUT.TXT'
+PRdata = 'POST_DEV_POC-2_QOUT.TXT'
 
 os.chdir(path)
 
@@ -84,7 +88,7 @@ for Qbin in EXQcompare:
     ws.cell(row=i+2, column=2).value = EXcomply[i]
     ws.cell(row=i+2, column=3).value = PRcomply[i]
     ws.cell(row=i+2, column=4).value = Qfractionlist[i]
-    if Qfraction > 1.1:
+    if Qfractionlist[i] > 1.1:
         ws.cell(row=i+2, column=5).value = "FAIL"
     else:
         ws.cell(row=i+2, column=5).value = "PASS"
@@ -92,4 +96,3 @@ for Qbin in EXQcompare:
     i+=1
 
 wb.save('Hydromod_compliance'+EXdata+'.xlsx')
-
